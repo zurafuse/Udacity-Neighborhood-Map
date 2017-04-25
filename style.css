@@ -1,0 +1,42 @@
+html, body {
+	height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.header-content {
+	color: white;
+	text-align: center;
+	background-color: #080;
+}
+
+.side-items {
+	width: 350px;
+	background-color: #0b0;
+	height: 100%;
+}
+
+#map {
+        top:0px;
+        height: 100%;
+        left: 330px;
+        position: absolute;
+        right: 0px;
+		text-align: center;
+		font-size: 19pt;
+}
+
+.list-menu {
+	list-style: none;
+	color: white;
+	font-weight: bold;
+	font-size: 13pt;
+}
+
+.list-menu > li:hover{
+	background-color: #080;
+}
+
+.my-container {
+	height: 100%;
+}
