@@ -38,20 +38,8 @@ var model = {
 	clickLoc: function(data) {
 		var thisItem = data.wiki;
 		this.wikiURL = "https://en.wikipedia.org/w/api.php?action=query&titles=" + thisItem + "&prop=revisions&rvprop=content&format=json";
-		model.getWiki();
-		console.log(this.wikiURL);
+		console.log(data.wiki + " " + this.wikiURL);
 	},
-	getWiki: function(){
-	var wikiRequestTimeout = setTimeout (function(){
-		$(".articles").text("The Wikipedia article API is currently unavailable. Please try again later.")
-		}, 7000);
-		$.ajax({
-			url: this.wikiURL,
-			dataType: "json",
-			success: function(response) {
-				clearTimeout(wikiRequestTimeout);
-			}
-		})},
 	displayError: function(){
 		this.headerTwo("The Google Maps API is currently unavailable or unresponsive. Please try again later.");
 		this.mapText("The Google Maps API is currently unavailable or unresponsive. Please try again later.");
