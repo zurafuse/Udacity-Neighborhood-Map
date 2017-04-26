@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<link rel="stylesheet" href="style.css">
 		<title>VISIT SLAPOUT, ALABAMA</title>
+		<script src = "jquery-3.2.1.min.js"></script>
 		<script src = "knockout.js"></script>
 	</head>
 	<body>
@@ -14,12 +15,14 @@
 					<h2 class="header-text">SLAPOUT, ALABAMA</h2>
 					<h3 class="header-text" data-bind="text: headerTwo"></h3>
 				</div>
-				<ul class="list-menu" data-bind="foreach: locations">
-					<li class="each-item" data-bind="text: name"></li>
-				</ul>
 				<div class="filter">
-			
+					<p>SHOW:&nbsp;&nbsp;&nbsp;</p>
+					<select id="selector" data-bind="options: filter, optionsValue: 'name', value: filterSelect, event: {change: updateList}">
+					</select>
 				</div>
+				<ul class="list-menu" data-bind="foreach: locations">
+					<li class="each-item" data-bind="text: name, visible: visible, event: {click: $parent.clickLoc}"></li>
+				</ul>
 				<div class="articles">
 			
 				</div>
