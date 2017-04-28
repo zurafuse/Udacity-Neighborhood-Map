@@ -18,6 +18,7 @@ var model = {
 		{name: "Banks and Financing", type: "financial"},
 		{name: "Restaurants", type: "restaurant"}		
 	]),
+	markers: ko.observableArray([]),
 	headerTwo: ko.observable("Click on Location Markers for More Information."),
 	mapText: ko.observable("Please wait while the map loads."),
 	filterSelect: ko.observable("Everything"),
@@ -42,7 +43,16 @@ var model = {
 				console.log(data.query.pages);
 		}}).fail(function(){
 			console.log("BOOM everything's broke");
-			});		
+			});
+		//cause the selected marker to bounce. Turn off the animation for all other markers.
+		for (i = 0; i < model.markers().length; i++){
+			if (thisItem == model.markers()[i].wiki){
+				model.markers()[i].setAnimation(google.maps.Animation.BOUNCE);
+			}
+			else{
+				model.markers()[i].setAnimation(null);
+			}
+		}
 	},
 	displayError: function(){
 		this.headerTwo("The Google Maps API is currently unavailable or unresponsive. Please try again later.");
@@ -53,7 +63,7 @@ var model = {
 ko.applyBindings(model);
 
       var map;
-	  var markers = [];	  
+//	  var markers = [];	  
       function initMap() {
 		try {
 			map = new google.maps.Map(document.getElementById('map'), {
@@ -69,10 +79,10 @@ ko.applyBindings(model);
 					animation: google.maps.Animation.DROP,
 					id: i
 				});
+				model.markers().push(thisMarker);
 				thisMarker.addListener("click", function(){
-					model.clickLoc(thisMarker);
+					model.clickLoc(this);
 				});
-				markers.push(thisMarker);
 			}
 		}
 		catch(err) {
@@ -81,12 +91,12 @@ ko.applyBindings(model);
 	  }
 	  var filterMarkers = function(){	  
 			for (i = 0; i < model.locations().length; i++){
-				for (j = 0; j < markers.length; j++){
-					if (model.locations()[i].name == markers[j].title){
+				for (j = 0; j < model.markers().length; j++){
+					if (model.locations()[i].name == model.markers()[j].title){
 						if (model.locations()[i].visible() == true){
-							markers[j].setMap(map);
+							model.markers()[j].setMap(map);
 						}else{
-							markers[j].setMap(null);
+							model.markers()[j].setMap(null);
 						}
 					}
 				}
