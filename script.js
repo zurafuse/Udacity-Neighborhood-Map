@@ -22,6 +22,7 @@ var model = {
 	headerTwo: ko.observable("Click on Location Markers for More Information."),
 	mapText: ko.observable("Please wait while the map loads."),
 	filterSelect: ko.observable("Everything"),
+	wikiContent: ko.observable(" "),
 	updateList: function(){
 		for (i = 0; i < this.locations().length; i++){
 			if (this.filterSelect() == this.locations()[i].filter || this.filterSelect() == "Everything"){
@@ -35,14 +36,28 @@ var model = {
 	},
 	clickLoc: function(data) {
 		var thisItem = data.wiki;
-		var wikiURL = ("https://crossorigin.me/https://en.wikipedia.org/w/api.php?action=query&titles=" + thisItem + "&prop=revisions&rvprop=content&format=json");
+		var wikiURL = ("https://crossorigin.me/https://en.wikipedia.org/w/api.php?action=query&titles=" + thisItem + "&prop=extracts&format=json");
+		var wikiTimeBomb = setTimeout(function(){
+			$(".current-article").remove();
+			$(".articles").append("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
+		}, 7000);
+
 		$.ajax({
 			url: wikiURL, 
 			type: "GET", 
 			success: function(data){
-				console.log(data.query.pages);
+				var obj = data.query.pages;
+				var keys = Object.keys(obj);
+				keys.forEach(function(key) {
+					model.wikiContent(obj[key].extract);
+					$(".current-article").remove();
+					$(".articles").append("<div class='current-article'>" + model.wikiContent() + "</div>");
+					$(".side-items").css({"height":"100%"});
+					clearTimeout(wikiTimeBomb);
+				});				
 		}}).fail(function(){
-			console.log("BOOM everything's broke");
+				$(".current-article").remove();
+				$(".articles").append("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
 			});
 		//cause the selected marker to bounce. Turn off the animation for all other markers.
 		for (i = 0; i < model.markers().length; i++){
@@ -70,6 +85,9 @@ ko.applyBindings(model);
 				center: {lat: 32.635853, lng: -86.3182195},
 				zoom: 17
 			});
+			var infowindow = new google.maps.InfoWindow({
+				content: "test"
+			});	
 			for (i = 0; i < model.locations().length; i++){
 				var thisMarker = new google.maps.Marker({
 					position: model.locations()[i].location,
@@ -77,11 +95,12 @@ ko.applyBindings(model);
 					title: model.locations()[i].name,
 					wiki: model.locations()[i].wiki,
 					animation: google.maps.Animation.DROP,
-					id: i
-				});
+					id: i,
+					});
 				model.markers().push(thisMarker);
 				thisMarker.addListener("click", function(){
 					model.clickLoc(this);
+					infowindow.open(map, this);
 				});
 			}
 		}
