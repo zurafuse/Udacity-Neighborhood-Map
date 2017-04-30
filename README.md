@@ -14,7 +14,7 @@ Clone my [Neighborhood Map repository](https://github.com/zurafuse/Udacity-Neigh
 
 [Knockout javascript library](http://knockoutjs.com/)
 
-[jQuery javascript library] (https://jquery.com/)
+[jQuery javascript library](https://jquery.com/)
 
 ## Hosted Version of Project
 
