@@ -10,6 +10,7 @@
 	</head>
 	<body>
 		<section class="my-container">
+			<button class="hide-button" data-bind="event: {click: toggleMenu}">HIDE MENU</button>
 			<nav class="side-items">
 				<div class="header-content">
 					<h2 class="header-text">SLAPOUT, ALABAMA</h2>
@@ -23,9 +24,9 @@
 				<ul class="list-menu" data-bind="foreach: locations">
 					<li class="each-item" data-bind="text: name, visible: visible, event: {click: $parent.clickLoc}"></li>
 				</ul>
-				<div class="articles">
+				<p>Articles provided courtesy of <a href="https://www.wikipedia.org/">Wikipedia.org.</a></p>
+				<div class="articles" data-bind="html: wikiContent">
 				</div>
-				<img src="http://maps.googleapis.com/maps/api/streetview?size=330x217&location=slapout al">
 			</nav>
 			<div id="map" data-bind="text: mapText"></div>			
 		</section>

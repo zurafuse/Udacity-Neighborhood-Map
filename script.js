@@ -23,6 +23,7 @@ var model = {
 	mapText: ko.observable("Please wait while the map loads."),
 	filterSelect: ko.observable("Everything"),
 	wikiContent: ko.observable(" "),
+	wikiName: ko.observable(" "),
 	updateList: function(){
 		for (i = 0; i < this.locations().length; i++){
 			if (this.filterSelect() == this.locations()[i].filter || this.filterSelect() == "Everything"){
@@ -38,26 +39,34 @@ var model = {
 		var thisItem = data.wiki;
 		var wikiURL = ("https://crossorigin.me/https://en.wikipedia.org/w/api.php?action=query&titles=" + thisItem + "&prop=extracts&format=json");
 		var wikiTimeBomb = setTimeout(function(){
-			$(".current-article").remove();
-			$(".articles").append("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
+			model.wikiContent("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
 		}, 7000);
 
 		$.ajax({
 			url: wikiURL, 
 			type: "GET", 
 			success: function(data){
-				var obj = data.query.pages;
-				var keys = Object.keys(obj);
-				keys.forEach(function(key) {
-					model.wikiContent(obj[key].extract);
-					$(".current-article").remove();
-					$(".articles").append("<div class='current-article'>" + model.wikiContent() + "</div>");
-					$(".side-items").css({"height":"100%"});
+				var object = data.query.pages;
+				var objectArray = Object.keys(object);
+				objectArray.forEach(function(key) {
+					model.wikiContent(object[key].extract);
+					model.wikiName(object[key].title);				
+					for (i = 0; i < model.markers().length; i++){
+						if (thisItem == model.markers()[i].wiki){
+							model.markers()[i].setAnimation(google.maps.Animation.BOUNCE);
+							infowindow = new google.maps.InfoWindow({
+							content: model.wikiName()
+							});	
+							infowindow.open(map, model.markers()[i]);
+						}
+						else{
+							model.markers()[i].setAnimation(null);
+						}
+					}
 					clearTimeout(wikiTimeBomb);
 				});				
 		}}).fail(function(){
-				$(".current-article").remove();
-				$(".articles").append("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
+				model.wikiContent("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
 			});
 		//cause the selected marker to bounce. Turn off the animation for all other markers.
 		for (i = 0; i < model.markers().length; i++){
@@ -67,6 +76,16 @@ var model = {
 			else{
 				model.markers()[i].setAnimation(null);
 			}
+		}
+	},
+	toggleMenu: function(){
+		if ($(".side-items").css("display") == "none"){
+			$(".hide-button").html("HIDE MENU");
+			$(".side-items").show();
+		}
+		else{
+			$(".side-items").hide();	
+			$(".hide-button").html("SHOW MENU");
 		}
 	},
 	displayError: function(){
@@ -85,8 +104,8 @@ ko.applyBindings(model);
 				center: {lat: 32.635853, lng: -86.3182195},
 				zoom: 17
 			});
-			var infowindow = new google.maps.InfoWindow({
-				content: "test"
+			infowindow = new google.maps.InfoWindow({
+				content: "Loading..."
 			});	
 			for (i = 0; i < model.locations().length; i++){
 				var thisMarker = new google.maps.Marker({
@@ -100,7 +119,7 @@ ko.applyBindings(model);
 				model.markers().push(thisMarker);
 				thisMarker.addListener("click", function(){
 					model.clickLoc(this);
-					infowindow.open(map, this);
+//					infowindow.open(map, this);
 				});
 			}
 		}

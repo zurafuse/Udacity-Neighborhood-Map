@@ -12,15 +12,30 @@ html, body {
 }
 
 .side-items {
-	width: 330px;
+	position: absolute;
+	top: 40px;
+	left: 0px;
+	z-index: 2;
+	width: 310px;
 	background-color: #0b0;
 	height: 100%;
+}
+
+.hide-button {
+	position:absolute;
+	top: 2px;
+    left: 10px;
+    z-index:2;
+	font-size: 19pt;
+	color: white;
+	font-weight: bold;
+	background-color: #0b0;
 }
 
 #map {
         top:0px;
         height: 100%;
-        left: 330px;
+        left: 10px;
         position: absolute;
         right: 0px;
 		text-align: center;
