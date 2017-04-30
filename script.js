@@ -1,4 +1,6 @@
+//values that could change the DOM when updated are handled in this model as ko observables.
 var model = {
+	//the locations array contains all the places of interest on the map.
 	locations: ko.observableArray([
 		{name: "Piggly Wiggly", address: "9985 Holtville Rd, Wetumpka AL 36092", wiki: "Piggly_Wiggly", filter: "Grocery Stores", location: {lat: 32.635127, lng: -86.318694}, visible: ko.observable(true)},
 		{name: "Dollar General", address: "215 Lightwood Rd, Deatsville AL 36022", wiki: "Dollar_General", filter: "Stores and Retail", location: {lat: 32.638026, lng: -86.320502}, visible: ko.observable(true)},
@@ -24,6 +26,9 @@ var model = {
 	filterSelect: ko.observable("Everything"),
 	wikiContent: ko.observable(" "),
 	wikiName: ko.observable(" "),
+	//this function is called whenever a user selects an option from the filter. If the chosen filter matches the 
+	//filter property of the current location property in the loop, make sure that location entry is "visible".
+	//Otherwise, make it not visible.
 	updateList: function(){
 		for (i = 0; i < this.locations().length; i++){
 			if (this.filterSelect() == this.locations()[i].filter || this.filterSelect() == "Everything"){
@@ -35,19 +40,24 @@ var model = {
 		}
 		filterMarkers();
 	},
+	//this function is called whenever a user clicks on a list item or a marker. The clicked location or maker is passed as
+	//an object to this function, as the input argument.
 	clickLoc: function(data) {
 		var thisItem = data.wiki;
 		var wikiURL = ("https://crossorigin.me/https://en.wikipedia.org/w/api.php?action=query&titles=" + thisItem + "&prop=extracts&format=json");
+		//prepare a message to appear in case the Wikipedia API does not respond in a timely manner.
 		var wikiTimeBomb = setTimeout(function(){
 			model.wikiContent("<div class='current-article'><p>We are sorry, but Wikipedia content is not available at the moment. Try again soon.</p></div>");
 		}, 7000);
-
+		//retrieve info from Wikipedia's API
 		$.ajax({
 			url: wikiURL, 
 			type: "GET", 
 			success: function(data){
 				var object = data.query.pages;
 				var objectArray = Object.keys(object);
+				//Loop through the "pages" returned from Wikipedia's response and pull an extract to populate the wikiContent and wikiName properties.
+				//This content will be used to display an article on the page.
 				objectArray.forEach(function(key) {
 					model.wikiContent(object[key].extract);
 					model.wikiName(object[key].title);				
@@ -63,6 +73,7 @@ var model = {
 							model.markers()[i].setAnimation(null);
 						}
 					}
+					//if this response was successful, we can prevent the error message from appearing on the screen.
 					clearTimeout(wikiTimeBomb);
 				});				
 		}}).fail(function(){
@@ -78,6 +89,7 @@ var model = {
 			}
 		}
 	},
+	//if the user clicks the HIDE MENU button, hide the menu. If the SHOW MENU button is pressed, display the menu again.
 	toggleMenu: function(){
 		if ($(".side-items").css("display") == "none"){
 			$(".hide-button").html("HIDE MENU");
@@ -88,6 +100,7 @@ var model = {
 			$(".hide-button").html("SHOW MENU");
 		}
 	},
+	//Display this error if the Google Maps initMap function fails for any reason.
 	displayError: function(){
 		this.headerTwo("The Google Maps API is currently unavailable or unresponsive. Please try again later.");
 		this.mapText("The Google Maps API is currently unavailable or unresponsive. Please try again later.");
@@ -96,50 +109,51 @@ var model = {
 
 ko.applyBindings(model);
 
-      var map;
-//	  var markers = [];	  
-      function initMap() {
-		try {
-			map = new google.maps.Map(document.getElementById('map'), {
-				center: {lat: 32.635853, lng: -86.3182195},
-				zoom: 17
+//Create the map via Google Maps API, and create markers for each location.
+var map;  
+function initMap() {
+	try {
+		map = new google.maps.Map(document.getElementById('map'), {
+			center: {lat: 32.635853, lng: -86.3182195},
+			zoom: 16
+		});
+		infowindow = new google.maps.InfoWindow({
+			content: "Loading..."
+		});	
+		for (i = 0; i < model.locations().length; i++){
+			var thisMarker = new google.maps.Marker({
+				position: model.locations()[i].location,
+				map: map,
+				title: model.locations()[i].name,
+				wiki: model.locations()[i].wiki,
+				animation: google.maps.Animation.DROP,
+				id: i,
 			});
-			infowindow = new google.maps.InfoWindow({
-				content: "Loading..."
-			});	
-			for (i = 0; i < model.locations().length; i++){
-				var thisMarker = new google.maps.Marker({
-					position: model.locations()[i].location,
-					map: map,
-					title: model.locations()[i].name,
-					wiki: model.locations()[i].wiki,
-					animation: google.maps.Animation.DROP,
-					id: i,
-					});
-				model.markers().push(thisMarker);
-				thisMarker.addListener("click", function(){
-					model.clickLoc(this);
-//					infowindow.open(map, this);
-				});
+			model.markers().push(thisMarker);
+			thisMarker.addListener("click", function(){
+				model.clickLoc(this);
+			});
+		}
+	}
+	catch(err) {
+		model.displayError();
+	}
+}
+//This function makes markers visible if they match the selected filter,
+//and hides them if they do not match the selected filter.
+var filterMarkers = function(){	  
+	for (i = 0; i < model.locations().length; i++){
+		for (j = 0; j < model.markers().length; j++){
+			if (model.locations()[i].name == model.markers()[j].title){
+				if (model.locations()[i].visible() == true){
+					model.markers()[j].setMap(map);
+				}else{
+					model.markers()[j].setMap(null);
+				}
 			}
 		}
-		catch(err) {
-			model.displayError();
-		}
-	  }
-	  var filterMarkers = function(){	  
-			for (i = 0; i < model.locations().length; i++){
-				for (j = 0; j < model.markers().length; j++){
-					if (model.locations()[i].name == model.markers()[j].title){
-						if (model.locations()[i].visible() == true){
-							model.markers()[j].setMap(map);
-						}else{
-							model.markers()[j].setMap(null);
-						}
-					}
-				}
-			}		
-	  }
+	}		
+}
 	  
 //Prepare an error to display if the map has not been populated yet. If the map does populate, this time out function will be cleared.
 var googleRequestTimeout = setTimeout(function(){
